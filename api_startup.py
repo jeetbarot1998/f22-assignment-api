@@ -48,8 +48,8 @@ API = Api(flask_app, authorizations= AUTH)
 # ================================= JWT END ==========================================
 
 ############Append Namespace##############
-API.add_namespace(token_jwt)
-API.add_namespace(follow_demo)
+# API.add_namespace(token_jwt)
+# API.add_namespace(follow_demo)
 API.add_namespace(TwitterNlp)
 
 if __name__ == '__main__':
