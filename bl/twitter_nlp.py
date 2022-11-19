@@ -14,53 +14,63 @@ accessTokenSecret = os.environ['accessTokenSecret']  ## Access Token Secret
 
 
 # @cache.cached(timeout=3600)
-def main_func(keyword):
-    print("Authenticating starts here..............")
+def fetch_tweets_analysis(keyword, n_tweets):
+    n_tweets = min(100,n_tweets)
+    print("Authentication starts here..............")
     auth = tweepy.OAuthHandler(consumerKey, consumerSecret)
     print("Setting Access token here...............")
     auth.set_access_token(accessToken, accessTokenSecret)
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, wait_on_rate_limit=True)
     try:
         api.verify_credentials()
-        print("Connection to Twitter established.")
+        print("Connection to Twitter established!")
     except:
-        print("Failed to connect to Twitter.")
+        print("Failed to connect to Twitter!")
 
-    tweets = api.search_tweets(q=keyword, lang="en", count=100)  ## keyword
-    positive = 0
-    negative = 0
-    neutral = 0
-    polarity = 0
+    tweets = api.search_tweets(q=keyword, lang="en", count=100, tweet_mode = "extended")  ## keyword, count
+    # positive = 0
+    # negative = 0
+    # neutral = 0
+    # polarity = 0
+    tweet_list = []
+    sentiment_list = []
 
     print("Iterating over tweets............")
     for tweet in tweets:
-        analysis = TextBlob(tweet.text)
-        score = SentimentIntensityAnalyzer().polarity_scores(tweet.text)
+        # analysis = TextBlob(tweet.text)
+        tweet_list.append(tweet.full_text)
+        score = SentimentIntensityAnalyzer().polarity_scores(tweet.full_text)
         neg = score['neg']
-        neu = score['neu']
+        # neu = score['neu']
         pos = score['pos']
-        comp = score['compound']
-        polarity += analysis.sentiment.polarity
+        # comp = score['compound']
+        # polarity += analysis.sentiment.polarity
 
         if neg > pos:
-            negative += 1
+            sentiment_list.append('Negative')
+            # negative += 1
 
         elif pos > neg:
-            positive += 1
+            sentiment_list.append('Positive')
+            # positive += 1
 
         elif pos == neg:
-            neutral += 1
+            sentiment_list.append('Neutral')
+            # neutral += 1
 
-    # print("Finalizing DataFrames............")
-    # output = pd.DataFrame(
-    #     data={'Sentiments': ['negative', 'positive', 'neutral'], '# tweets': [negative, positive, neutral]})
-    # output['% tweets'] = round(output['# tweets'] / 100, 2)
+        if len(tweet_list) == n_tweets:
+            break
+
+    # res = {
+    #     'keyword' : keyword,
+    #     'negative' : negative,
+    #     'positive': positive,
+    #     'neutral' : neutral
+    # }
 
     res = {
-        'keyword' : keyword,
-        'negative' : negative,
-        'positive': positive,
-        'neutral' : neutral
+        'tweets' : tweet_list,
+        'sentiments': sentiment_list
     }
 
     return res
