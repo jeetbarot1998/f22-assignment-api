@@ -11,5 +11,5 @@ class Follow(Resource):
     @api.doc(security='apikey')
     @api.response('default', 'Error')
     def post(self):
-        response = main_func(api.payload['keyword'])
+        response = main_func(api.payload['keyword'], api.payload['number_of_tweets'])
         return response
